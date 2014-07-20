@@ -4,11 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <ostream>
 #include <assert.h>
-#include <iostream>
-
-using namespace std;
 
 typedef struct op_stack {
 	int max_capacity;
@@ -16,34 +12,33 @@ typedef struct op_stack {
 	int *elements;
 } op_stack;
 
-op_stack* create_opstack(int MAX) {
+op_stack* create_opstack(int max) {
 	op_stack* t;
 	t = (op_stack*)malloc(sizeof(op_stack));
-	t -> size = 0;
-	t -> max_capacity = MAX;
-	t -> elements = (int*)malloc(sizeof(int)* MAX);
+	t->size = 0;
+	t->max_capacity = max;
+	t->elements = (int*)malloc(sizeof(int)* max);
 	return t;
 }
 void pop(op_stack* stk) {
 	if (stk->size != 0) stk->size--;
 }
-int top(op_stack* stk)
-{
+int top(op_stack* stk) {
 	if (stk->size != 0) return stk->elements[stk->size - 1];
-	exit(0);
+	exit(0);  // FIXME: this is bad.  Bad bad bad bad bad.
 }
 void push(op_stack* stk, int element) {
 	if (stk->size != stk->max_capacity) stk->elements[stk->size++] = element;
 }
 
-void exec(op_stack* orig_stk) {
+void exec(FILE* fp) {
 	int a[3000] = { 0 };
 	int* ptr = a;
 	ptr += 1000;
 	op_stack* lp = create_opstack(5000);
 	
-	while (orig_stk->size > 0) {
-		char ch = (char)top(orig_stk);
+	while (!feof(fp)) {
+		char ch = (char)fgetc(fp);
 		switch (ch) {
 			case '>':
 				++ptr;
@@ -65,48 +60,43 @@ void exec(op_stack* orig_stk) {
 				break;
 			case '[':
 				if (*ptr > 0) {
-					push(lp, orig_stk->size);
+					push(lp, ftell(fp));
 				}
 				else {
 					int c = 1;
 					while (c > 0) {
-						pop(orig_stk);
-						if (top(orig_stk) == '[')
+						char topch = (char)fgetc(fp);
+						if (topch == '[')
 							c++;
-						if (top(orig_stk) == ']')
+						if (topch == ']')
 							c--;
 					}
 				}
 				break;
 			case ']':
 				if (*ptr > 0) {
-					orig_stk->size = top(lp);
+					fseek(fp, top(lp), SEEK_SET);
 				}
 				else {
 					pop(lp);
 				}
 				break;
 		}
-		pop(orig_stk);
 	}
 }
 
-int main(int argc, char* argv[])
-{	
-	op_stack *orig_stk = create_opstack(5000);
-	FILE* fp = fopen("c:/users/manan/desktop/hello.bf" /*or argv[1]*/, "r");
-	int ch = fgetc(fp);
-	while (ch != EOF) {
-		if (ch == '.' || ch == ',' || ch == '>' || ch == '<' || ch == '+' || ch == '-' || ch == '[' || ch == ']') push(orig_stk, ch);
-		ch = fgetc(fp);
+int main(int argc, char* argv[]) {
+	if (argc < 2) {
+		fputs("error: missing a file to execute\n", stderr);
+		return 1;
+	}
+	FILE* fp = fopen(argv[1], "r");
+	if (!fp) {
+		fputs("error: could not open file\n", stderr);
+		return 1;
 	}
 
-	op_stack *n = create_opstack(5000);
-	while (orig_stk->size > 0) {
-		push(n, top(orig_stk));
-		pop(orig_stk);
-	}
+	exec(fp);
 
-	exec(n);
-	//system("PAUSE");
+	return 0;
 }

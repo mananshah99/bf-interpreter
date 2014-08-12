@@ -1,4 +1,4 @@
-bf-interpreter
+bf-interpreter [![Build Status](https://travis-ci.org/mananshah99/bf-interpreter.svg?branch=master)](https://travis-ci.org/mananshah99/bf-interpreter)
 ==============
 
 Interpreter for the instruction-pointer based esoteric language

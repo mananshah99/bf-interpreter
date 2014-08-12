@@ -3,3 +3,4 @@ compiler:
   - gcc
 script: 
   - make
+  - gcc interpreter/interpreter/main.c -o exec && exec test/hello.bf

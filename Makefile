@@ -1,9 +1,8 @@
 CFLAGS := -Wall -Werror
-SRCDIR := interpreter/interpreter
 
 all: bf
 
-bf: $(SRCDIR)/main.c
+bf: main.c
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
